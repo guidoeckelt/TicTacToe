@@ -8,7 +8,7 @@
   "private": true,
   "main": "server.js",
   "scripts": {
-    "start": "start server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.12.4",
