@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta name="description" content="TicTacToe App">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <title>TicTacToe</title>
+    <link id="favicon" rel="icon" href="https://hyperdev.com/favicon.ico" type="image/x-icon">
+
+    <!-- StyleSheets -->
+    <link href="/basic.css" rel="stylesheet"/>
+
+    <!-- External-Scripts -->
+    <!-- socket.io Client-Side -->
+    <script src="https://code.jquery.com/jquery-2.2.1.min.js" integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00=" crossorigin="anonymous"></script>
+    <!-- <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script> -->
+    <script src="/lib/socket-io-client.js"></script>
+    <script src="https://opensource.keycdn.com/angularjs/1.5.8/angular.min.js"></script>
+
+    </script>
+
+    <!-- Scripts -->
+    <script src="/client.js"></script>
+    <script src="/scene.js"></script>
+    <script src="/tictactoe.js"></script>
+    <!-- <script src="/lib/p5.js"></script>
+    <script src="/lib/p5.dom.js"></script>
+    <script src="/lib/p5.sound.js"></script>
+    <script src="/scene.js"></script> -->
+    <script>
+      var app = angular.module("app",["io-client"]);
+      app.controller("Header",["$scope","socket",function($scope,socket){
+        var self = this;
+        $scope.isConnected= false;
+        self.connectionListener = function(value){
+          $scope.isConnected = value;
+          $scope.$apply();
+        };
+        socket.AddConnectionListener(self.connectionListener);
+      }]);
+      app.controller("TicTacToe",["socket",function(socket){
+        var self = this;
+        socket.AddConnectionListener(function(newValue){
+          if(newValue){
+            self.scene = new Scene("canvas-container");
+            self.scene.init();
+          }
+        });
+      }]);
+    </script>
+
+    <!-- Loaded-Scripts-->
+
+</head>
+<body ng-app="app">
+<header class="header" ng-controller="Header as ctrl">
+    <span>TicTacToe</span>
+    <div ng-switch on="isConnected">
+      <span ng-switch-when="true">Connected :D</span>
+      <span ng-switch-when="false">Disconnected :(</span>
+    </div>
+</header>
+<main id="canvas-container" class="main" ng-controller="TicTacToe">
+
+</main>
+<footer class="footer">
+
+</footer>
+<div id="test"></div>
+</body>
+</html>

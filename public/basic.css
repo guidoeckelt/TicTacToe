@@ -1,0 +1,45 @@
+*{
+    margin:0;
+    padding:0;
+    position: relative;
+
+    --body-height:                          100vh;
+    --header-height:                        50px;
+    --main-height:                          calc(var(--body-height) - var(--header-height));
+
+    --font-family:                          Arial, sans-serif;
+
+    --blurred-background:                   rgba(0,0,0,0.6);
+    --login-background:                     #ffffff;
+    --login-radius:                         10px;
+}
+#test
+{
+    position: absolute;
+    visibility: hidden;
+    height: auto;
+    width: auto;
+    white-space: nowrap; /* Thanks to Herb Caudill comment */
+}
+body{
+    width:100%;
+    height:100%;
+    height: var(--body-height);
+
+    overflow: hidden;
+}
+.header{
+  display: block;
+  height: var(--header-height);
+
+  z-index: 10;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+}
+
+.main{
+  display: block;
+  height: var(--body-height);
+}
