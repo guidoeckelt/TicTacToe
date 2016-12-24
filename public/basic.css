@@ -43,3 +43,10 @@ body{
   display: block;
   height: var(--body-height);
 }
+
+.disconnected{
+  background-color: red;
+}
+.connected{
+  background-color: green;
+}

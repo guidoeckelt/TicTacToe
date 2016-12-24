@@ -198,3 +198,12 @@ $.fn.textHeight = function(text, font) {
   $.fn.textWidth.fakeEl.text(text || this.val() || this.text()).css('font', font || this.css('font'));
   return $.fn.textWidth.fakeEl.height();
 };
+function getDisplaySize(){
+  var w = window,
+    d = document,
+    e = d.documentElement,
+    g = d.getElementsByTagName('body')[0],
+    x = w.innerWidth || e.clientWidth || g.clientWidth,
+    y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+    return {width:x,height:y};
+}

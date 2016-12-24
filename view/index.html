@@ -41,9 +41,12 @@
       }]);
       app.controller("TicTacToe",["socket",function(socket){
         var self = this;
+        self.scene = null;
         socket.AddConnectionListener(function(newValue){
-          if(newValue){
-            self.scene = new Scene("canvas-container");
+          if(newValue&&self.scene==null){
+            var width = getDisplaySize().width;
+            var height = getDisplaySize().height;
+            self.scene = new Scene("canvas-container",width,height);
             self.scene.init();
           }
         });
@@ -57,8 +60,8 @@
 <header class="header" ng-controller="Header as ctrl">
     <span>TicTacToe</span>
     <div ng-switch on="isConnected">
-      <span ng-switch-when="true">Connected :D</span>
-      <span ng-switch-when="false">Disconnected :(</span>
+      <span ng-switch-when="true" class="connected">Connected :D</span>
+      <span ng-switch-when="false" class="disconnected">Disconnected :(</span>
     </div>
 </header>
 <main id="canvas-container" class="main" ng-controller="TicTacToe">
