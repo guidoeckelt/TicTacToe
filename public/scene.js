@@ -23,8 +23,8 @@ var Scene = function(containerP,widthP=400,heightP=400){
   var backgroundColor = Scene.Color.Gray;
 
   self.mouseMoved = function(event){
-    mouseX = event.clientX;
-    mouseY = event.clientY;
+    mouseX = event.clientX - canvas.getBoundingClientRect().left;
+    mouseY = event.clientY - canvas.getBoundingClientRect().top;
   }
   self.mouseReleased = function(event){
     self.mouse(Event.Click.Released,event);
@@ -46,6 +46,91 @@ var Scene = function(containerP,widthP=400,heightP=400){
     }
   };
 
+  self.add = function(node){
+    if(!node instanceof Scene.Control.Button){
+      console.log(node+" was not a Button");
+      return;
+    }
+    nodes.push(node);
+  }
+  var drawPane = function(pane){
+    //Background First
+    context.fillStyle = 'rgba('+pane.back.color.r+','+pane.back.color.g+','+pane.back.color.b+','+pane.back.color.a+')';
+    if(pane.isMouseOver(mouseX,mouseY)){
+      context.fillStyle = 'rgba('+pane.backBorder.color.r+','+pane.backBorder.color.g+','+pane.backBorder.color.b+','+pane.backBorder.color.a+')';
+    }
+    context.fillRect(pane.x,pane.y,pane.width,pane.height);
+    //Border After
+    context.lineWidth = pane.border.width;
+    context.strokeStyle = 'rgba('+pane.border.color.r+','+pane.border.color.g+','+pane.border.color.b+','+pane.border.color.a+')';
+    if(pane.isMouseOver(mouseX,mouseY)){
+      context.strokeStyle = 'rgba('+pane.borderHover.color.r+','+pane.borderHover.color.g+','+pane.borderHover.color.b+','+pane.borderHover.color.a+')';
+    }
+    context.strokeRect(pane.x,pane.y,pane.width,pane.height);
+    //childs
+    for(var j=pane.childs.length-1;j>=0;j--){
+      var child = pane.childs[j];
+
+    }
+  };
+  var drawTextBlock = function(textBlock){
+    //Text
+    context.lineWidth = textBlock.font.weight;
+    context.font = textBlock.font.size+'px '+textBlock.font.family;
+    context.fillStyle = 'rgba('+textBlock.font.color.r+','+textBlock.font.color.g+','+textBlock.font.color.b+','+textBlock.font.color.a+')';
+    context.strokeStyle = 'rgba('+textBlock.font.color.r+','+textBlock.font.color.g+','+textBlock.font.color.b+','+textBlock.font.color.a+')';
+    var x = textBlock.x+(textBlock.width/2)-(textBlock.textWidth(false)/2);
+    var y = textBlock.y+(textBlock.height/2);//-(textBlock.textHeight()/2);
+    if(textBlock.isMouseOver(mouseX,mouseY)){
+      context.lineWidth = textBlock.fontHover.weight;
+      context.font = textBlock.fontHover.size+'px '+textBlock.fontHover.family;
+      context.fillStyle = 'rgba('+textBlock.fontHover.color.r+','+textBlock.fontHover.color.g+','+textBlock.fontHover.color.b+','+textBlock.fontHover.color.a+')';
+      context.strokeStyle = 'rgba('+textBlock.fontHover.color.r+','+textBlock.fontHover.color.g+','+textBlock.fontHover.color.b+','+textBlock.fontHover.color.a+')';
+      x = textBlock.x+(textBlock.width/2)-(textBlock.textWidth(true)/2);
+      y = textBlock.y+(textBlock.height/2);//-(textBlock.textHeight()/2);
+    }
+    context.fillText(textBlock.text,x,y,textBlock.width);
+    context.strokeText(textBlock.text,x,y,textBlock.width);
+  };
+  var drawButton = function(button){
+    //Background First
+    context.fillStyle = 'rgba('+button.back.color.r+','+button.back.color.g+','+button.back.color.b+','+button.back.color.a+')';
+    if(button.isMouseOver(mouseX,mouseY)){
+      context.fillStyle = 'rgba('+button.backHover.color.r+','+button.backHover.color.g+','+button.backHover.color.b+','+button.backHover.color.a+')';
+    }
+    context.fillRect(button.x,button.y,button.width,button.height);
+    //Border After
+    context.lineWidth = button.border.width;
+    context.strokeStyle = 'rgba('+button.border.color.r+','+button.border.color.g+','+button.border.color.b+','+button.border.color.a+')';
+    if(button.isMouseOver(mouseX,mouseY)){
+      context.strokeStyle = 'rgba('+button.borderHover.color.r+','+button.borderHover.color.g+','+button.borderHover.color.b+','+button.borderHover.color.a+')';
+    }
+    context.strokeRect(button.x,button.y,button.width,button.height);
+    //childs
+    for(var j=button.childs.length-1;j>=0;j--){
+      var child = button.childs[j];
+      drawTextBlock(child);
+    }
+  };
+  self.draw = function(){
+    //Background
+    context.fillStyle = 'rgba('+backgroundColor.r+','+backgroundColor.g+','+backgroundColor.b+','+backgroundColor.a+')';
+    context.fillRect(0,0,width,height);
+
+    for(var i=nodes.length-1;i>=0;i--){
+      var node = nodes[i];
+      if(node instanceof Scene.Control.Button){
+        drawButton(node);
+      }else if(node instanceof Scene.Control.Pane){
+        drawPane(node);
+      } else if(node instanceof Scene.Control.TextBlock){
+        drawTextBlock(node);
+      }else{
+        console.log(node.toString());
+      }
+    }
+    window.setTimeout(function(){self.draw();},10);
+  };
 
   self.init = function(){
     canvas = document.createElement("canvas");
@@ -57,61 +142,56 @@ var Scene = function(containerP,widthP=400,heightP=400){
     context = canvas.getContext("2d");
     container.appendChild(canvas);
 
-    var button = new Scene.Control.Button(TicTacToe.Mode.Local1vs1);
-    button.onClicked(function(){
-      console.log("Local1vs1 starts now");
-    });
-    nodes.push(button);
     self.draw();
-  };
-  self.draw = function(){
-    //Background
-    context.fillStyle = 'rgba('+backgroundColor.r+','+backgroundColor.g+','+backgroundColor.b+','+backgroundColor.a+')';
-    context.fillRect(0,0,width,height);
-
-    for(var i=nodes.length-1;i>=0;i--){
-      var node = nodes[i];
-      //Button
-      //Background First
-      context.fillStyle = 'rgba('+node.back.color.r+','+node.back.color.g+','+node.back.color.b+','+node.back.color.a+')';
-
-      context.fillRect(node.x,node.y,node.width,node.height);
-      //Border After
-      context.lineWidth = node.border.width;
-      context.strokeStyle = 'rgba('+node.border.color.r+','+node.border.color.g+','+node.border.color.b+','+node.border.color.a+')';
-      if(node.isMouseOver(mouseX,mouseY)){
-        context.strokeStyle = 'rgba('+node.borderHover.color.r+','+node.borderHover.color.g+','+node.borderHover.color.b+','+node.borderHover.color.a+')';
-      }
-      context.strokeRect(node.x,node.y,node.width,node.height);
-      //childs
-      for(var j=node.childs.length-1;j>=0;j--){
-        var child = node.childs[j];
-        //Text
-        context.lineWidth = child.font.weight;
-        context.font = child.font.size+'px '+child.font.family;
-        context.fillStyle = 'rgba('+child.font.color.r+','+child.font.color.g+','+child.font.color.b+','+child.font.color.a+')';
-        context.strokeStyle = 'rgba('+child.font.color.r+','+child.font.color.g+','+child.font.color.b+','+child.font.color.a+')';
-        var x = child.x+(child.width/2)-(child.textWidth(false)/2);
-        var y = child.y+(child.height/2);//-(node.textHeight()/2);
-        if(node.isMouseOver(mouseX,mouseY)){
-          context.lineWidth = child.fontHover.weight;
-          context.font = child.fontHover.size+'px '+child.fontHover.family;
-          context.fillStyle = 'rgba('+child.fontHover.color.r+','+child.fontHover.color.g+','+child.fontHover.color.b+','+child.fontHover.color.a+')';
-          context.strokeStyle = 'rgba('+child.fontHover.color.r+','+child.fontHover.color.g+','+child.fontHover.color.b+','+child.fontHover.color.a+')';
-          x = child.x+(child.width/2)-(child.textWidth(true)/2);
-          y = child.y+(child.height/2);//-(node.textHeight()/2);
-        }
-        context.fillText(child.text,x,y,node.width);
-        context.strokeText(child.text,x,y,node.width);
-      }
-    }
-    window.setTimeout(function(){self.draw();},10);
   };
 
   self.getCanvas = function(){ return canvas; };
   self.getCanvasContext = function(){ return context; };
 }
 Scene.Control = {
+  Pane : function(x=100,y=100,width=200,height=50){
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+
+    var childs = new Array();
+
+    self.attach = function(node){
+      if(!node instanceof Scene.Control.Button){
+        console.log(node+" was not a Button");
+        return;
+      }
+      var length = childs.length;
+      var newLength = childs.push(node);
+      return newLength>length;
+    }
+    self.attach = function(node){
+      if(!node instanceof Scene.Control.Button){
+        console.log(node+" was not a Button");
+      }
+      for(var i=childs.length-1;i>=0;i--){
+        if(node == childs[i]){
+          childs.push(node);
+          return true;
+        }
+      }
+      return false
+    }
+    this.isMouseOver = function(mouseX,mouseY){
+      if(mouseX >= this.x && mouseX <= this.x+this.width){
+        if(mouseY >= this.y && mouseY <= this.y+this.height){
+          return true;
+        }
+      }
+      return false;
+    };
+
+    this.border={color:Scene.Color.Black, width : 5};
+    this.borderHover={color:Scene.Color.Black, width : 5};
+    this.back={color:Scene.Color.None};
+    this.backHover={color:Scene.Color.White};
+  },
   Button : function(text="Button",x=100,y=100,width=200,height=50){
     this.x = x;
     this.y = y;
@@ -125,8 +205,9 @@ Scene.Control = {
     this.childs.push(textBlock);
 
     this.border={color:Scene.Color.Black, width : 5};
-    this.borderHover={color:Scene.Color.Yellow, width : 5};
-    this.back={color:Scene.Color.None};
+    this.borderHover={color:Scene.Color.White, width : 5};
+    this.back={color:Scene.Color.White};
+    this.backHover={color:Scene.Color.Black};
 
     var clickCallback;
     this.clickEvent = Event.Click.Released;
@@ -143,9 +224,10 @@ Scene.Control = {
       clickCallback();
     };
     this.onClicked = function(callback){
-      if(callback instanceof Function||typeof callback === "function"){
-        clickCallback = callback;
+      if(!(callback instanceof Function||typeof callback === "function")){
+        return;
       }
+      clickCallback = callback;
     };
   },
   TextBlock : function(value='Text',x,y){
@@ -156,7 +238,7 @@ Scene.Control = {
 
     this.text = value;
     this.font = {size : 20, color: Scene.Color.Black,family:'Arial', weight : 1};
-    this.fontHover = {size : 20, color: Scene.Color.Green,family:'Arial',weight : 2};
+    this.fontHover = {size : 20, color: Scene.Color.White,family:'Arial',weight : 2};
     this.textWidth = function(hover){
       var font = hover?this.fontHover:this.font;
       return $.fn.textWidth(this.text,font.size+'px '+font.family);
@@ -181,7 +263,8 @@ Scene.Color = {
     Red : {r:255,g:0,b:0,a:1},
     Green : {r:0,g:255,b:0,a:1},
     Yellow : {r:255,g:255,b:0,a:1},
-    Blue : {r:0,g:0,b:255,a:1},
+    Blue : {r:30,g:30,b:255,a:1},
+    DarkBlue : {r:0,g:0,b:255,a:1},
     Gray : {r:100,g:100,b:100,a:1},
     Black : {r:0,g:0,b:0,a:1},
     None : {r:0,g:0,b:0,a:0}

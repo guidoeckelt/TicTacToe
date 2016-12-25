@@ -1,15 +1,28 @@
-var client = angular.module("io-client",[]);
+var client = angular.module("SocketService",[]);
 
-function SocketService(){
+function io_client(){
 
-    var socket = io();
+    var socket;
     var connected = false;
     var connectionListener = new Array();
 
-    this.isConnected = function(){ return connected};
+    this.connect = function(url){
+      socket = io(url);
+      socket.on("connect",function(){
+        connected = true;
+        console.log("io-client connection established");
+        OnConnectionSwitched(connected);
+      });
+      socket.on("disconnect",function(){
+        connected = false;
+        console.log("io-client connection lost");
+        OnConnectionSwitched(connected);
+      });
+    }
     this.on = function(event,callback){
       socket.on(event,callback);
     };
+
     this.AddConnectionListener = function(callback){
       connectionListener.push(callback);
     };
@@ -18,20 +31,8 @@ function SocketService(){
         listener(newValue);
       }
     };
-
-    //init
-    socket.on("connect",function(){
-      connected = true;
-      console.log("io-client connection established");
-      OnConnectionSwitched(connected);
-    });
-    socket.on("disconnect",function(){
-      connected = false;
-      console.log("io-client connection lost");
-      OnConnectionSwitched(connected);
-    });
+    this.isConnected = function(){ return connected};
 }
-
-client.factory("socket",function(){
-  return new SocketService();
+client.factory("io-client",function(){
+  return new io_client();
 });
