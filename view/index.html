@@ -26,8 +26,7 @@
     <script src="/tictactoe.js"></script>
     <!-- <script src="/lib/p5.js"></script>
     <script src="/lib/p5.dom.js"></script>
-    <script src="/lib/p5.sound.js"></script>
-    <script src="/scene.js"></script> -->
+    <script src="/lib/p5.sound.js"></script> -->
     <script>
       var app = angular.module("app",["SocketService"]);
       app.controller("Header",["$scope","io-client",function($scope,io_client){
@@ -38,16 +37,71 @@
           $scope.$apply();
         };
         io_client.AddConnectionListener(self.connectionListener);
-        io_client.connect("localhost:3001");
       }]);
       app.controller("TicTacToe",["io-client",function(io_client){
         var self = this;
         self.scene = null;
         self.buttons = new Array();
+        self.ticTacToeProcess = null;
 
         self.start = function(mode){
+          switch(mode){
+            case TicTacToe.Mode.SingleVsAI:
+              self.startAI();
+              break;
+            case TicTacToe.Mode.Local1vs1:
+              self.startLocal();
+              break;
+            case TicTacToe.Mode.Online1vs1:
+              self.startOnline();
+              break;
+            default: console.log("mode is "+mode);
+          }
           console.log(mode+" starts now");
         }
+        self.startAI = function(){};
+        self.startLocal = function(){};
+        self.startOnline = function(){
+          var name=null;
+          var prompt='Bitte gebe deine Nickname ein';
+          var suggestion = 'LustigerKautz';
+          // if(name!=null){
+          //   suggestion='NotSoCleverKautz';
+          // }
+          name = window.prompt(prompt,suggestion);
+          var dto = {
+            name : name
+          };
+          // post('/check/name',dto,function(){
+          // });
+          io_client.emit('init',dto);
+          io_client.on('update',function(connectedSockets){
+            var keys = Object.keys(connectedSockets);
+            console.log("Connected User:");
+            for(var i=keys.length-1;i>=0;i--){
+                var key = keys[i];
+                var user = connectedSockets[key];
+                // if(socket==null){
+                //   console.log("null user");
+                //   continue;
+                // }
+                // console.log('\tid:'+user.id+' | '
+                //  +'name:'+user.name+' | '
+                //  +'mouseX:'+user.mouseX+' | '
+                //  +'mouseY:'+user.mouseY);
+            }
+          })
+          // });
+          self.ticTacToeProcess = window.setInterval(function(){
+            var dto = {
+              name : name,
+              mouseX : self.scene.mouseX,
+              mouseY : self.scene.mouseY
+            };
+            // console.log(JSON.stringify(dto));
+            io_client.emit('update',dto);
+          },10);
+        };
         self.init = function(){
           var width = getDisplaySize().width;
           var height = getDisplaySize().height;
@@ -68,20 +122,24 @@
             var height = 100;
             var x = 100;
             var y = (i*height)+((i+1)*margin);//+(i*margin);
-            var button = new Scene.Control.Button(mode,x,y,width,height);
+            var button = new Scene.Node.Button(mode,x,y,width,height);
             var onClickHandler = function(){
               self.start(mode);
             };
             button.onClicked(onClickHandler);
             self.buttons.push(button);
-            self.scene.add(button);
+            self.scene.attach(button);
           }
+          var button = new Scene.Node.Button(mode,10);
         }
         io_client.AddConnectionListener(function(newValue){
           if(newValue&&self.scene==null){
             self.init();
           }
         });
+      }]);
+      app.run(['io-client',function(io_client){
+        io_client.connect('localhost:3001');
       }]);
     </script>
 

@@ -22,6 +22,12 @@ function io_client(){
     this.on = function(event,callback){
       socket.on(event,callback);
     };
+    this.emit = function(event,data,shouldAddId=false){
+      if(shouldAddId==true){
+        data.id = socket.id;
+      }
+      socket.emit(event,data);
+    };
 
     this.AddConnectionListener = function(callback){
       connectionListener.push(callback);

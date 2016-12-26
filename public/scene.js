@@ -16,15 +16,15 @@ var Scene = function(containerP,widthP=400,heightP=400){
   var context;
   var width = widthP;
   var height = heightP;
-  var mouseX = 0;
-  var mouseY = 0;
   var nodes = new Array();
 
   var backgroundColor = Scene.Color.Gray;
+  self.mouseX = -1;
+  self.mouseY = -1;
 
   self.mouseMoved = function(event){
-    mouseX = event.clientX - canvas.getBoundingClientRect().left;
-    mouseY = event.clientY - canvas.getBoundingClientRect().top;
+    self.mouseX = event.clientX - canvas.getBoundingClientRect().left;
+    self.mouseY = event.clientY - canvas.getBoundingClientRect().top;
   }
   self.mouseReleased = function(event){
     self.mouse(Event.Click.Released,event);
@@ -35,7 +35,7 @@ var Scene = function(containerP,widthP=400,heightP=400){
   self.mouse = function(type,event){
     for(var i=nodes.length-1;i>=0;i--){
       var node = nodes[i];
-      if(node.isMouseOver(mouseX,mouseY)){
+      if(node.isMouseOver(self.mouseX,self.mouseY)){
         if(node.button==event.button){
           if(node.clickEvent==type){
             node.clicked();
@@ -46,24 +46,39 @@ var Scene = function(containerP,widthP=400,heightP=400){
     }
   };
 
-  self.add = function(node){
-    if(!node instanceof Scene.Control.Button){
+
+  self.attach = function(node){
+    if(!node instanceof Scene.Node.Button){
       console.log(node+" was not a Button");
       return;
     }
-    nodes.push(node);
-  }
+    var length = nodes.length;
+    var newLength = nodes.push(node);
+    return newLength>length;
+  };
+  self.detach = function(node){
+    if(!node instanceof Scene.Node.Button){
+      console.log(node+" was not a Button");
+    }
+    for(var i=nodes.length-1;i>=0;i--){
+      if(node == nodes[i]){
+        nodes.splice(i,1);
+        return true;
+      }
+    }
+    return false;
+  };
   var drawPane = function(pane){
     //Background First
     context.fillStyle = 'rgba('+pane.back.color.r+','+pane.back.color.g+','+pane.back.color.b+','+pane.back.color.a+')';
-    if(pane.isMouseOver(mouseX,mouseY)){
+    if(pane.isMouseOver(self.mouseX,mthis.ouseY)){
       context.fillStyle = 'rgba('+pane.backBorder.color.r+','+pane.backBorder.color.g+','+pane.backBorder.color.b+','+pane.backBorder.color.a+')';
     }
     context.fillRect(pane.x,pane.y,pane.width,pane.height);
     //Border After
     context.lineWidth = pane.border.width;
     context.strokeStyle = 'rgba('+pane.border.color.r+','+pane.border.color.g+','+pane.border.color.b+','+pane.border.color.a+')';
-    if(pane.isMouseOver(mouseX,mouseY)){
+    if(pane.isMouseOver(self.mouseX,self.mouseY)){
       context.strokeStyle = 'rgba('+pane.borderHover.color.r+','+pane.borderHover.color.g+','+pane.borderHover.color.b+','+pane.borderHover.color.a+')';
     }
     context.strokeRect(pane.x,pane.y,pane.width,pane.height);
@@ -81,7 +96,7 @@ var Scene = function(containerP,widthP=400,heightP=400){
     context.strokeStyle = 'rgba('+textBlock.font.color.r+','+textBlock.font.color.g+','+textBlock.font.color.b+','+textBlock.font.color.a+')';
     var x = textBlock.x+(textBlock.width/2)-(textBlock.textWidth(false)/2);
     var y = textBlock.y+(textBlock.height/2);//-(textBlock.textHeight()/2);
-    if(textBlock.isMouseOver(mouseX,mouseY)){
+    if(textBlock.isMouseOver(self.mouseX,self.mouseY)){
       context.lineWidth = textBlock.fontHover.weight;
       context.font = textBlock.fontHover.size+'px '+textBlock.fontHover.family;
       context.fillStyle = 'rgba('+textBlock.fontHover.color.r+','+textBlock.fontHover.color.g+','+textBlock.fontHover.color.b+','+textBlock.fontHover.color.a+')';
@@ -95,14 +110,14 @@ var Scene = function(containerP,widthP=400,heightP=400){
   var drawButton = function(button){
     //Background First
     context.fillStyle = 'rgba('+button.back.color.r+','+button.back.color.g+','+button.back.color.b+','+button.back.color.a+')';
-    if(button.isMouseOver(mouseX,mouseY)){
+    if(button.isMouseOver(self.mouseX,self.mouseY)){
       context.fillStyle = 'rgba('+button.backHover.color.r+','+button.backHover.color.g+','+button.backHover.color.b+','+button.backHover.color.a+')';
     }
     context.fillRect(button.x,button.y,button.width,button.height);
     //Border After
     context.lineWidth = button.border.width;
     context.strokeStyle = 'rgba('+button.border.color.r+','+button.border.color.g+','+button.border.color.b+','+button.border.color.a+')';
-    if(button.isMouseOver(mouseX,mouseY)){
+    if(button.isMouseOver(self.mouseX,self.mouseY)){
       context.strokeStyle = 'rgba('+button.borderHover.color.r+','+button.borderHover.color.g+','+button.borderHover.color.b+','+button.borderHover.color.a+')';
     }
     context.strokeRect(button.x,button.y,button.width,button.height);
@@ -119,11 +134,11 @@ var Scene = function(containerP,widthP=400,heightP=400){
 
     for(var i=nodes.length-1;i>=0;i--){
       var node = nodes[i];
-      if(node instanceof Scene.Control.Button){
+      if(node instanceof Scene.Node.Button){
         drawButton(node);
-      }else if(node instanceof Scene.Control.Pane){
+      }else if(node instanceof Scene.Node.Pane){
         drawPane(node);
-      } else if(node instanceof Scene.Control.TextBlock){
+      } else if(node instanceof Scene.Node.TextBlock){
         drawTextBlock(node);
       }else{
         console.log(node.toString());
@@ -148,7 +163,7 @@ var Scene = function(containerP,widthP=400,heightP=400){
   self.getCanvas = function(){ return canvas; };
   self.getCanvasContext = function(){ return context; };
 }
-Scene.Control = {
+Scene.Node = {
   Pane : function(x=100,y=100,width=200,height=50){
     this.x = x;
     this.y = y;
@@ -158,7 +173,7 @@ Scene.Control = {
     var childs = new Array();
 
     self.attach = function(node){
-      if(!node instanceof Scene.Control.Button){
+      if(!node instanceof Scene.Node.Button){
         console.log(node+" was not a Button");
         return;
       }
@@ -166,17 +181,17 @@ Scene.Control = {
       var newLength = childs.push(node);
       return newLength>length;
     }
-    self.attach = function(node){
-      if(!node instanceof Scene.Control.Button){
+    self.detach = function(node){
+      if(!node instanceof Scene.Node.Button){
         console.log(node+" was not a Button");
       }
       for(var i=childs.length-1;i>=0;i--){
         if(node == childs[i]){
-          childs.push(node);
+          childs.splice(i,1);
           return true;
         }
       }
-      return false
+      return false;
     }
     this.isMouseOver = function(mouseX,mouseY){
       if(mouseX >= this.x && mouseX <= this.x+this.width){
@@ -199,7 +214,7 @@ Scene.Control = {
     this.height = height;
 
     this.childs = new Array();
-    var textBlock = new Scene.Control.TextBlock(text,this.x,this.y);
+    var textBlock = new Scene.Node.TextBlock(text,this.x,this.y);
     textBlock.width = width;
     textBlock.height = height;
     this.childs.push(textBlock);
