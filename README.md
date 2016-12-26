@@ -1,9 +1,10 @@
 # TicTacToe
-TicTacToe app to developing
+TicTacToe app to learn node.js for:
 
 - Server-Client apps
 - multiplayer games
 
+Also want to create Libraries for future reuse atleast once :D
 - a Canvas-Library for:
   - [ ] client-side Gamevisualization
   - [ ] client-side Animations
