@@ -1,2 +1,18 @@
 # TicTacToe
-TicTacToe-App to learn develope Server-Client-Apps with node.js and socket.io and creating a Canvas-Library for Gamevisualization and building UIs
+TicTacToe app to developing
+
+- Server-Client apps
+- multiplayer games
+
+- a Canvas-Library for:
+  - [ ] client-side Gamevisualization
+  - [ ] client-side Animations
+  - [ ] building client-side UI
+  
+- a Node-Library for:
+  - [ ] multiplayer games with socket.io
+  - [ ] chat-system with socket.io
+  
+    - Lobbychats
+    - Groupchats
+    - whisper-function (private messages)
